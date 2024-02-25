@@ -101,7 +101,7 @@
                 const timeout = setTimeout(() => {
                     const url = 'http://' + word;
                     checkWebsite(url);
-                }, index * 25);  // 25ms delay between each request
+                }, index * 10);  // 10ms delay between each request
                 timeouts.push(timeout);
             });
         }
