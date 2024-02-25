@@ -1,0 +1,116 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Website Checker</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: #f0f0f0;
+        }
+        h1 {
+            background-color: #333;
+            color: #fff;
+            padding: 10px 0;
+            margin: 0;
+            text-align: center;
+        }
+        label, input, button {
+            display: block;
+            margin: 0 0 10px;
+        }
+        input, button {
+            width: 100%;
+            padding: 10px;
+        }
+        button {
+            cursor: pointer;
+        }
+        #log, #success {
+            height: 200px;
+            width: 100%;
+            border: 1px solid #ccc;
+            padding: 10px;
+            box-sizing: border-box;
+            overflow: auto;
+            margin: 0 0 10px;
+        }
+        #container {
+            width: 80%;
+            margin: auto;
+            padding: 20px;
+        }
+    </style>
+</head>
+<body>
+    <h1>Website Checker</h1>
+    <div id="container">
+        <label for="site">Enter site with wildcards (e.g., face**.com):</label>
+        <input type="text" id="site" name="site">
+        <button onclick="startChecking()">Start Checking</button>
+        <button onclick="stopChecking()">Stop Checking</button>
+        <h2>Log:</h2>
+        <div id="log"></div>
+        <h2>Success:</h2>
+        <div id="success"></div>
+    </div>
+
+        <script>
+        let shouldContinue = true;
+        let timeouts = [];
+
+        function checkWebsite(url) {
+            if (!shouldContinue) return;
+            const img = new Image();
+            img.onload = function() {
+                document.getElementById('log').innerHTML = 'Checking: ' + url;
+                document.getElementById('success').innerHTML += url + '<br>';
+            };
+            img.onerror = function() {
+                document.getElementById('log').innerHTML = 'Checking: ' + url;
+            };
+            img.src = url + '/favicon.ico';
+        }
+
+        function generateCombinations(pattern, index, prefix) {
+            if (index >= pattern.length) {
+                return [prefix];
+            }
+            if (pattern[index] === '*') {
+                let combinations = [];
+                for (let i = 0; i < 26; i++) {
+                    const char = String.fromCharCode('a'.charCodeAt(0) + i);
+                    combinations = combinations.concat(generateCombinations(pattern, index + 1, prefix + char));
+                }
+                return combinations;
+            } else {
+                return generateCombinations(pattern, index + 1, prefix + pattern[index]);
+            }
+        }
+
+        function startChecking() {
+            // Clear previous timeouts
+            timeouts.forEach(clearTimeout);
+            timeouts = [];
+
+            shouldContinue = true;
+            const site = document.getElementById('site').value;
+            const words = generateCombinations(site, 0, '');
+            words.forEach((word, index) => {
+                const timeout = setTimeout(() => {
+                    const url = 'http://' + word;
+                    checkWebsite(url);
+                }, index * 50);  // 50ms delay between each request
+                timeouts.push(timeout);
+            });
+        }
+
+        function stopChecking() {
+            shouldContinue = false;
+        }
+    </script>
+ 
+</body>
+</html>
+
